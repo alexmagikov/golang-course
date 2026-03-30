@@ -1,9 +1,9 @@
 package domain
 
 type Repo struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Stars       int64  `json:"stargazers_count"`
-	Forks       int64  `json:"forks_count"`
-	CreatedAt   string `json:"created_at"`
+	Name        string
+	Description string
+	Stars       int64
+	Forks       int64
+	CreatedAt   string
 }

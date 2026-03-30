@@ -18,17 +18,17 @@ func New(conn *grpc.ClientConn) *Client {
 	}
 }
 
-func (c *Client) GetRepo(ctx context.Context, owner, name string) (*domain.Repo, error) {
+func (c *Client) GetRepo(ctx context.Context, owner, name string) (domain.Repo, error) {
 	resp, err := c.api.GetRepo(ctx, &api.GetRepoRequest{
 		Owner: owner,
 		Name:  name,
 	})
 
 	if err != nil {
-		return nil, err
+		return domain.Repo{}, err
 	}
 
-	return &domain.Repo{
+	return domain.Repo{
 		Name:        resp.Name,
 		Description: resp.Description,
 		Stars:       resp.Stars,

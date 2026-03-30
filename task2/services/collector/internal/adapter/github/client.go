@@ -39,12 +39,12 @@ func CreatePath(name string, repo string) string {
 
 // GetRepo
 // Get general info about GitHub repo by url.
-func (c *Client) GetRepo(ctx context.Context, owner, name string) (*domain.Repo, error) {
+func (c *Client) GetRepo(ctx context.Context, owner, name string) (domain.Repo, error) {
 	url := CreatePath(owner, name)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		return nil, fmt.Errorf("create request: %w", err)
+		return domain.Repo{}, fmt.Errorf("create request: %w", err)
 	}
 
 	req.Header.Set("Accept", "application/vnd.github+json")
@@ -55,7 +55,7 @@ func (c *Client) GetRepo(ctx context.Context, owner, name string) (*domain.Repo,
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("do request: %w", err)
+		return domain.Repo{}, fmt.Errorf("do request: %w", err)
 	}
 
 	defer func() {
@@ -68,28 +68,27 @@ func (c *Client) GetRepo(ctx context.Context, owner, name string) (*domain.Repo,
 	case http.StatusOK:
 
 	case http.StatusNotFound:
-
-		return nil, fmt.Errorf("repo not found: %s", url)
+		return domain.Repo{}, fmt.Errorf("repo not found: %s", url)
 
 	case http.StatusForbidden:
-		return nil, fmt.Errorf("access is not accepted: %s", url)
+		return domain.Repo{}, fmt.Errorf("access is not accepted: %s", url)
 
 	default:
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		return domain.Repo{}, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return domain.Repo{}, err
 	}
 
 	var dto RepoDTO
 
 	if err := json.Unmarshal(body, &dto); err != nil {
-		return nil, err
+		return domain.Repo{}, err
 	}
 
-	return &domain.Repo{
+	return domain.Repo{
 		Name:        dto.Name,
 		Description: dto.Description,
 		Stars:       dto.Stars,

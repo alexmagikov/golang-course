@@ -6,7 +6,7 @@ import (
 )
 
 type RepoProvider interface {
-	GetRepo(ctx context.Context, owner, name string) (*domain.Repo, error)
+	GetRepo(ctx context.Context, owner, name string) (domain.Repo, error)
 }
 
 type Usecase struct {
@@ -17,6 +17,6 @@ func New(p RepoProvider) *Usecase {
 	return &Usecase{provider: p}
 }
 
-func (u *Usecase) GetRepoInfo(ctx context.Context, owner, name string) (*domain.Repo, error) {
+func (u *Usecase) GetRepoInfo(ctx context.Context, owner, name string) (domain.Repo, error) {
 	return u.provider.GetRepo(ctx, owner, name)
 }

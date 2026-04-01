@@ -1,0 +1,92 @@
+package github
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"repo-stat/collector/internal/domain"
+	"repo-stat/collector/internal/dto"
+	"time"
+)
+
+type Client struct {
+	httpClient *http.Client
+	token      string
+	baseURL    string
+}
+
+func NewClient(token string) *Client {
+	return &Client{
+		httpClient: &http.Client{
+			Timeout: 10 * time.Second,
+		},
+		token: token,
+	}
+}
+
+func CreatePath(name string, repo string) string {
+	return fmt.Sprintf("https://api.github.com/repos/%s/%s", name, repo)
+}
+
+// GetRepo
+// Get general info about GitHub repo by url.
+func (c *Client) GetRepo(ctx context.Context, owner, name string) (domain.Repo, error) {
+	url := CreatePath(owner, name)
+
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return domain.Repo{}, fmt.Errorf("create request: %w", err)
+	}
+
+	req.Header.Set("Accept", "application/vnd.github+json")
+	req.Header.Set("User-Agent", "GetRepoInfo-App")
+	if c.token != "" {
+		req.Header.Set("Authorization", "Bearer "+c.token)
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return domain.Repo{}, fmt.Errorf("do request: %w", err)
+	}
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			fmt.Println(err)
+		}
+	}()
+
+	switch resp.StatusCode {
+	case http.StatusOK:
+
+	case http.StatusNotFound:
+		return domain.Repo{}, fmt.Errorf("repo not found: %s", url)
+
+	case http.StatusForbidden:
+		return domain.Repo{}, fmt.Errorf("access is not accepted: %s", url)
+
+	case http.StatusUnauthorized:
+		return domain.Repo{}, fmt.Errorf("unauthorized: invalid token: %s", url)
+
+	default:
+		return domain.Repo{}, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return domain.Repo{}, err
+	}
+
+	var dto dto.RepoDTO
+	if err := json.Unmarshal(body, &dto); err != nil {
+		return domain.Repo{}, err
+	}
+
+	return domain.Repo{
+		Name:        dto.Name,
+		Description: dto.Description,
+		Stars:       dto.Stars,
+		Forks:       dto.Forks,
+		CreatedAt:   dto.CreatedAt,
+	}, nil
+}

@@ -1,0 +1,93 @@
+basePath: /
+definitions:
+  repo-stat_api_internal_dto.PingResponse:
+    properties:
+      services:
+        items:
+          $ref: '#/definitions/repo-stat_api_internal_dto.ServiceStatus'
+        type: array
+      status:
+        type: string
+    type: object
+  repo-stat_api_internal_dto.RepoResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      forks:
+        type: integer
+      name:
+        type: string
+      stars:
+        type: integer
+    type: object
+  repo-stat_api_internal_dto.ServiceStatus:
+    properties:
+      name:
+        type: string
+      status:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API for getting info about github repo by url
+  title: Repo-stat API Gateway
+  version: 1.0.0
+paths:
+  /api/ping:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: All services are available
+          schema:
+            $ref: '#/definitions/repo-stat_api_internal_dto.PingResponse'
+        "503":
+          description: One or all services are not available
+          schema:
+            $ref: '#/definitions/repo-stat_api_internal_dto.PingResponse'
+      summary: Ping services
+      tags:
+      - Health
+  /api/repositories/info:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: url of github repo
+        in: query
+        name: url
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/repo-stat_api_internal_dto.RepoResponse'
+        "400":
+          description: Incorrect request
+          schema:
+            type: string
+        "404":
+          description: Repo not found
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+        "503":
+          description: Service is unavailable
+          schema:
+            type: string
+      summary: Get info about repo by url
+      tags:
+      - Repositories
+swagger: "2.0"

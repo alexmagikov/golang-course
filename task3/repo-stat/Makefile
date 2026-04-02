@@ -34,7 +34,7 @@ protolint:
 
 gofmtcheck:
 	find . -type f -name '*.go' ! -name '*.pb.go' -print0 | xargs -0 $(GOIMPORTS) -w
-	git diff --exit-code
+	git diff --exit-code -- ':(exclude)*.pb.go'
 
 golint:
 	$(GOLANGCI_LINT) run --timeout=2m -E gocritic -v ./...

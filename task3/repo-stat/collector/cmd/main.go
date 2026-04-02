@@ -45,7 +45,7 @@ func run(ctx context.Context) error {
 
 	grpcServer := grpc.NewServer()
 	collector.RegisterCollectorServiceServer(grpcServer, repoServer)
-	
+
 	log.Info("starting collector...")
 
 	go func() {

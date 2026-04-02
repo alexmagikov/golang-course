@@ -43,7 +43,7 @@ func (s *ProcessorServer) GetRepo(ctx context.Context, req *processor.GetRepoReq
 		if st, ok := status.FromError(err); ok {
 			return nil, st.Err()
 		}
-		
+
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 

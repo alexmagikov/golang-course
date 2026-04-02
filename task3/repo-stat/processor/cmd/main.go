@@ -41,8 +41,7 @@ func run(ctx context.Context) error {
 	pingUseCase := usecase.NewPing()
 	repoUseCase := usecase.NewRepo(collectorClient)
 
-	pingServer := grpcController.NewPingServer(pingUseCase)
-	repoServer := grpcController.NewRepoServer(repoUseCase)
+	processorServer := grpcController.NewProcessorServer(pingUseCase, repoUseCase)
 
 	lis, err := net.Listen("tcp", cfg.GRPC.Address)
 	if err != nil {
@@ -51,8 +50,7 @@ func run(ctx context.Context) error {
 	}
 
 	grpcServer := grpc.NewServer()
-	processor.RegisterProcessorServiceServer(grpcServer, pingServer)
-	processor.RegisterProcessorServiceServer(grpcServer, repoServer)
+	processor.RegisterProcessorServiceServer(grpcServer, processorServer)
 
 	log.Info("starting processor...")
 

@@ -9,6 +9,9 @@ import (
 	"repo-stat/collector/internal/domain"
 	"repo-stat/collector/internal/dto"
 	"time"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type Client struct {
@@ -20,7 +23,7 @@ type Client struct {
 func NewClient(token string) *Client {
 	return &Client{
 		httpClient: &http.Client{
-			Timeout: 10 * time.Second,
+			Timeout: 30 * time.Second,
 		},
 		token: token,
 	}
@@ -60,16 +63,16 @@ func (c *Client) GetRepo(ctx context.Context, owner, name string) (domain.Repo, 
 	case http.StatusOK:
 
 	case http.StatusNotFound:
-		return domain.Repo{}, fmt.Errorf("repo not found: %s", url)
+		return domain.Repo{}, status.Error(codes.NotFound, "repo not found")
 
 	case http.StatusForbidden:
-		return domain.Repo{}, fmt.Errorf("access is not accepted: %s", url)
+		return domain.Repo{}, status.Error(codes.ResourceExhausted, "access forbidden")
 
 	case http.StatusUnauthorized:
-		return domain.Repo{}, fmt.Errorf("unauthorized: invalid token: %s", url)
+		return domain.Repo{}, status.Error(codes.Unauthenticated, "unauthorized: invalid token")
 
 	default:
-		return domain.Repo{}, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		return domain.Repo{}, status.Error(codes.Internal, "unexpected status code")
 	}
 
 	body, err := io.ReadAll(resp.Body)

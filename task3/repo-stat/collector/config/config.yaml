@@ -5,7 +5,7 @@ github:
   token: ""
 
 grpc:
-  address: "localhost:50051"
+  address: ":50051"
   timeout: "5s"
 
 logger:

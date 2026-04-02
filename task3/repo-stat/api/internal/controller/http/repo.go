@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"repo-stat/api/internal/dto"
 	"repo-stat/api/internal/usecase"
+	"strings"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -25,15 +27,37 @@ import (
 // @Router  /api/repositories/info [get]
 func NewRepoHandler(log *slog.Logger, repo *usecase.RepoUseCase) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		url := r.URL.Query().Get("url")
-		if url == "" {
+		urlParam := r.URL.Query().Get("url")
+		if urlParam == "" {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode("url is required")
+			json.NewEncoder(w).Encode(map[string]string{
+				"error": "url is required",
+			})
 			return
 		}
 
-		repo, err := repo.GetRepoInfo(r.Context(), url)
+		parsed, err := url.Parse(urlParam)
+		if err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{
+				"error": "url parse error",
+			})
+			return
+		}
+
+		fullName := strings.Trim(parsed.Path, "/")
+		if fullName == "" {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{
+				"error": "full name is required",
+			})
+			return
+		}
+
+		repoInfo, err := repo.GetRepoInfo(r.Context(), urlParam)
 		if err != nil {
 			statusCode := http.StatusInternalServerError
 			errorMsg := "Internal Server Error"
@@ -50,9 +74,12 @@ func NewRepoHandler(log *slog.Logger, repo *usecase.RepoUseCase) http.HandlerFun
 					statusCode = http.StatusServiceUnavailable
 					errorMsg = "service unavailable"
 				}
+			} else {
+				statusCode = http.StatusBadRequest
+				errorMsg = "Invalid url"
 			}
 
-			log.Error("get repo info failed", "error", err, "url", url)
+			log.Error("get repo info failed", "error", err, "url", urlParam)
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(statusCode)
 			json.NewEncoder(w).Encode(map[string]string{
@@ -62,7 +89,7 @@ func NewRepoHandler(log *slog.Logger, repo *usecase.RepoUseCase) http.HandlerFun
 			return
 		}
 
-		response := dto.FromDomainRepo(repo)
+		response := dto.FromDomainRepo(repoInfo, fullName)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

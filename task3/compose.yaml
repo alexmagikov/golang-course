@@ -7,7 +7,7 @@ services:
     container_name: api
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "28080:8080"
     environment:
       - PROCESSOR_ADDRESS=processor:50052
       - SUBSCRIBER_ADDRESS=subscriber:50053
@@ -27,12 +27,11 @@ services:
     container_name: subscriber
     restart: unless-stopped
     ports:
-      - 50053:50053
+      - "50053:50053"
     volumes:
       - ./repo-stat/subscriber/config/config.yaml:/config.yaml
-    environment:
-      - LISTEN_ADDRESS=:8080
-      - API_ADDRESS=api:8080
+    networks:
+      - repo-stat
 
   processor:
     build:
@@ -70,7 +69,6 @@ services:
     restart: "no"
     depends_on:
       - api
-    entrypoint: ["true"]
 
 networks:
   repo-stat:

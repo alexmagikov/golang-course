@@ -2,10 +2,12 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"repo-stat/processor/internal/domain"
 	"strings"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type Repo struct {
@@ -26,12 +28,8 @@ func ParseGitHubURL(gihubURL string) (owner, name string, err error) {
 
 	path := strings.Trim(parsedURL.Path, "/")
 	parts := strings.Split(path, "/")
-	if len(parts) != 2 {
-		return "", "", fmt.Errorf("invalid path: %s", path)
-	}
-
-	if parts[0] == "" || parts[1] == "" {
-		return "", "", fmt.Errorf("owner and name connot be empty: %s", path)
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return "", "", status.Error(codes.InvalidArgument, path)
 	}
 
 	return parts[0], parts[1], nil
@@ -42,6 +40,6 @@ func (u *Repo) GetRepoInfo(ctx context.Context, githubURL string) (domain.Repo, 
 	if err != nil {
 		return domain.Repo{}, err
 	}
- 
+
 	return u.collectorClient.GetRepo(ctx, owner, name)
 }

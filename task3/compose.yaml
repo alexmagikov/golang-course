@@ -7,14 +7,17 @@ services:
     container_name: api
     restart: unless-stopped
     ports:
-      - 28080:8080
+      - "28080:8080"
+    environment:
+      - PROCESSOR_ADDRESS=processor:50052
+      - SUBSCRIBER_ADDRESS=subscriber:50053
+    depends_on:
+      - processor
+      - subscriber
+    networks:
+      - repo-stat
     volumes:
       - ./repo-stat/api/config/config.yaml:/config.yaml
-    environment:
-      - LISTEN_ADDRESS=:8080
-      - SUBSCRIBER_ADDRESS=subscriber:8080
-    depends_on:
-      - subscriber
 
   subscriber:
     image: subscriber:latest
@@ -24,12 +27,40 @@ services:
     container_name: subscriber
     restart: unless-stopped
     ports:
-      - 28081:8080
+      - "50053:50053"
     volumes:
       - ./repo-stat/subscriber/config/config.yaml:/config.yaml
+    networks:
+      - repo-stat
+
+  processor:
+    build:
+      context: repo-stat
+      dockerfile: Dockerfile.processor
+    container_name: processor
+    restart: unless-stopped
+    ports:
+      - "50052:50052"
     environment:
-      - LISTEN_ADDRESS=:8080
-      - API_ADDRESS=api:8080
+      - COLLECTOR_ADDRESS=collector:50051
+    depends_on:
+      - collector
+    networks:
+      - repo-stat
+
+  collector:
+    build:
+      context: repo-stat
+      dockerfile: Dockerfile.collector
+    container_name: collector
+    restart: unless-stopped
+    ports:
+      - "50051:50051"
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+    networks:
+      - repo-stat
+
   tests:
     image: tests:latest
     build:
@@ -38,4 +69,7 @@ services:
     restart: "no"
     depends_on:
       - api
-    entrypoint: ["true"]
+
+networks:
+  repo-stat:
+    driver: bridge

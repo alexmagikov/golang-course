@@ -10,6 +10,8 @@ import (
 	"repo-stat/api/internal/controller/http"
 	"repo-stat/platform/httpserver"
 	"repo-stat/platform/logger"
+
+	_ "repo-stat/api/docs"
 )
 
 func run(ctx context.Context) error {
@@ -42,6 +44,11 @@ func run(ctx context.Context) error {
 	return nil
 }
 
+// @title Repo-stat API Gateway
+// @version 1.0.0
+// @description API for getting info about github repo by url
+// @host localhost:28080
+// @BasePath /
 func main() {
 	ctx := context.Background()
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)

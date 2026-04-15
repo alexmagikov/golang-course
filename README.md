@@ -1,13 +1,30 @@
-Задания к курсу Backend разработка на GoLang 2026
+# RepoStat
 
-Запуск:
+Микросервисное приложение для получения информации о GitHub-репозиториях.
 
+---
+
+## Быстрый старт
+
+```bash
 git clone https://github.com/alexmagikov/golang-course
-
 cd golang-course/task3
-
 make up
+```
 
-использовать:
-1) curl http://localhost:28080/api/ping
-2) http://localhost:28080/swagger
+## Использование
+
+| Сервис             | URL                          |
+|--------------------|------------------------------|
+| API Gateway        | http://localhost:28080       |
+| Swagger UI         | http://localhost:28080/swagger |
+
+**Ping:**
+```bash
+curl http://localhost:28080/api/ping
+```
+
+**Информация о репозитории:**
+```bash
+curl "http://localhost:28080/api/repositories/info?url=https://github.com/golang/go"
+```

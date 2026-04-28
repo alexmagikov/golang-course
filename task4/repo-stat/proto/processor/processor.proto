@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package processor;
+
+option go_package = "proto/processor";
+
+service ProcessorService {
+  rpc Ping(PingRequest) returns (PingResponse);
+
+  rpc GetRepo (GetRepoRequest) returns (GetRepoResponse);
+
+  rpc GetSubscriptionInfo(GetSubInfoRequest) returns (GetSubInfoResponse);
+}
+
+message GetSubInfoRequest{
+}
+
+message PingRequest {
+}
+
+message PingResponse {
+  string reply = 1;
+}
+
+message GetRepoRequest {
+  string url = 1;
+}
+
+message GetRepoResponse {
+  string name = 1;
+  string description = 2;
+  int64 stars = 3;
+  int64 forks = 4;
+  string created_at = 5;
+}
+
+message GetSubInfoResponse {
+  repeated Repo repos = 1;
+}
+
+message Repo {
+  string name = 1;
+  string description = 2;
+  int64 stars = 3;
+  int64 forks = 4;
+  string created_at = 5;
+}

@@ -1,0 +1,19 @@
+app:
+  app_name: "repo-stat-subscriber"
+
+grpc:
+  address: ":50053"
+  timeout: "5s"
+
+github:
+  token: ""
+
+logger:
+  log_level: "DEBUG"
+
+database:
+  host: "project-postgres-db"
+  port: 5432
+  user: "myuser"
+  password: "mypassword"
+  dbname: "mydb"

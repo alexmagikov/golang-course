@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package subscriber.v1;
+
+option go_package = "proto/subscriber";
+
+service SubscriberService {
+  rpc Ping(PingRequest) returns (PingResponse);
+
+  rpc CreateSubscription(CreateSubRequest) returns (CreateSubResponse);
+
+  rpc DeleteSubscription(DeleteSubRequest) returns (DeleteSubResponse);
+
+  rpc GetSubscriptionsList(GetSubListRequest) returns (GetSubListResponse);
+}
+
+message GetSubListRequest {
+}
+
+message PingRequest {
+}
+
+message PingResponse {
+  string reply = 1;
+}
+
+message CreateSubRequest {
+  string url = 1;
+}
+
+message CreateSubResponse {
+}
+
+message DeleteSubResponse {
+}
+
+message DeleteSubRequest {
+  string owner = 1;
+  string repo = 2;
+}
+
+message GetSubListResponse {
+  repeated Subscription subscriptions = 1;
+}
+
+message Subscription {
+  int64 id = 1;
+  string owner = 2;
+  string repo = 3;
+}
